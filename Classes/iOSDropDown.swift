@@ -418,7 +418,7 @@ extension DropDown: UITableViewDelegate {
                         tableView.cellForRow(at: indexPath)?.backgroundColor = self.selectedRowColor
         } ,
                        completion: { (didFinish) -> Void in
-                        self.text = "\(selectedText)"
+                       // self.text = "\(selectedText)"
 
                         tableView.reloadData()
         })
