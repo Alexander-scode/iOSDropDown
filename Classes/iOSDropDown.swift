@@ -8,7 +8,7 @@
 //
 import UIKit
 
-open class DropDown : UITextField{
+open class DropDown : UITextField {
 
     var arrow : Arrow!
     var table : UITableView!
@@ -19,6 +19,7 @@ open class DropDown : UITextField{
     //MARK: IBInspectable
 
     @IBInspectable public var rowHeight: CGFloat = 30
+    @IBInspectable public var additionalWidth: CGFloat = 0
     @IBInspectable public var rowBackgroundColor: UIColor = .white
     @IBInspectable public var selectedRowColor: UIColor = .cyan
     @IBInspectable public var hideOptionsWhenSelect = true
@@ -60,7 +61,6 @@ open class DropDown : UITextField{
     fileprivate var backgroundView = UIView()
     fileprivate var keyboardHeight:CGFloat = 0
 
-    public var rowTextColor: UIColor = .black
     public var optionArray = [String]() {
         didSet{
             self.dataArray = self.optionArray
@@ -147,7 +147,7 @@ open class DropDown : UITextField{
             NotificationCenter.default.addObserver(forName: NSNotification.Name.UIKeyboardWillShow, object: nil, queue: nil) { (notification) in
                 if self.isFirstResponder{
                 let userInfo:NSDictionary = notification.userInfo! as NSDictionary
-                    let keyboardFrame:NSValue = userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue
+                let keyboardFrame:NSValue = userInfo.value(forKey: UIKeyboardFrameEndUserInfoKey) as! NSValue
                 let keyboardRectangle = keyboardFrame.cgRectValue
                 self.keyboardHeight = keyboardRectangle.height
                     if !self.isSelected{
@@ -210,7 +210,7 @@ open class DropDown : UITextField{
         }
         table = UITableView(frame: CGRect(x: pointToParent.x ,
                                           y: pointToParent.y + self.frame.height ,
-                                          width: self.frame.width,
+                                          width: self.frame.width+self.additionalWidth,
                                           height: self.frame.height))
         shadow = UIView(frame: table.frame)
         shadow.backgroundColor = .clear
@@ -239,7 +239,7 @@ open class DropDown : UITextField{
 
                         self.table.frame = CGRect(x: self.pointToParent.x,
                                                   y: y,
-                                                  width: self.frame.width,
+                                                  width: self.frame.width+self.additionalWidth,
                                                   height: self.tableheightX)
                         self.table.alpha = 1
                         self.shadow.frame = self.table.frame
@@ -266,7 +266,7 @@ open class DropDown : UITextField{
                        animations: { () -> Void in
                         self.table.frame = CGRect(x: self.pointToParent.x,
                                                   y: self.pointToParent.y+self.frame.height,
-                                                  width: self.frame.width,
+                                                  width: self.frame.width+self.additionalWidth,
                                                   height: 0)
                         self.shadow.alpha = 0
                         self.shadow.frame = self.table.frame
@@ -305,7 +305,7 @@ open class DropDown : UITextField{
                        animations: { () -> Void in
                         self.table.frame = CGRect(x: self.pointToParent.x,
                                                   y: y,
-                                                  width: self.frame.width,
+                                                  width: self.frame.width+self.additionalWidth,
                                                   height: self.tableheightX)
                         self.shadow.frame = self.table.frame
                         self.shadow.dropShadow()
@@ -402,7 +402,6 @@ extension DropDown: UITableViewDataSource {
         cell!.selectionStyle = .none
         cell?.textLabel?.font = self.font
         cell?.textLabel?.textAlignment = self.textAlignment
-        cell?.textLabel?.textColor = rowTextColor
         return cell!
     }
 }
@@ -418,7 +417,7 @@ extension DropDown: UITableViewDelegate {
                         tableView.cellForRow(at: indexPath)?.backgroundColor = self.selectedRowColor
         } ,
                        completion: { (didFinish) -> Void in
-                       // self.text = "\(selectedText)"
+                    self.text = "\(selectedText)"
 
                         tableView.reloadData()
         })
@@ -426,7 +425,7 @@ extension DropDown: UITableViewDelegate {
             touchAction()
             self.endEditing(true)
         }
-        if let selected = optionArray.firstIndex(where: {$0 == selectedText}) {
+        if let selected = optionArray.index(where: {$0 == selectedText}) {
             if let id = optionIds?[selected] {
                 didSelectCompletion(selectedText, selected , id )
             }else{
