@@ -7,7 +7,7 @@
 //
 import UIKit
 
-open class DropDown : UITextField {
+open class DropDown : UITextField{
 
     var arrow : Arrow!
     var table : UITableView!
@@ -16,7 +16,6 @@ open class DropDown : UITextField {
 
 
     //MARK: IBInspectable
-
     @IBInspectable public var rowHeight: CGFloat = 30
     @IBInspectable public var additionalWidth: CGFloat = 0
     @IBInspectable public var rowBackgroundColor: UIColor = .white
@@ -143,10 +142,10 @@ open class DropDown : UITextField {
         self.backgroundView.backgroundColor = .clear
         addGesture()
         if isSearchEnable && handleKeyboard{
-            NotificationCenter.default.addObserver(forName: NSNotification.Name.UIKeyboardWillShow, object: nil, queue: nil) { (notification) in
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: nil) { (notification) in
                 if self.isFirstResponder{
                 let userInfo:NSDictionary = notification.userInfo! as NSDictionary
-                let keyboardFrame:NSValue = userInfo.value(forKey: UIKeyboardFrameEndUserInfoKey) as! NSValue
+                    let keyboardFrame:NSValue = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue
                 let keyboardRectangle = keyboardFrame.cgRectValue
                 self.keyboardHeight = keyboardRectangle.height
                     if !self.isSelected{
@@ -155,7 +154,7 @@ open class DropDown : UITextField {
                 }
               
             }
-            NotificationCenter.default.addObserver(forName: NSNotification.Name.UIKeyboardWillHide, object: nil, queue: nil) { (notification) in
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: nil) { (notification) in
                 if self.isFirstResponder{
                 self.keyboardHeight = 0
                 }
@@ -401,6 +400,8 @@ extension DropDown: UITableViewDataSource {
         cell!.selectionStyle = .none
         cell?.textLabel?.font = self.font
         cell?.textLabel?.textAlignment = self.textAlignment
+        cell?.textLabel?.numberOfLines = 0
+        cell?.textLabel?.lineBreakMode = .byWordWrapping
         return cell!
     }
 }
@@ -416,7 +417,7 @@ extension DropDown: UITableViewDelegate {
                         tableView.cellForRow(at: indexPath)?.backgroundColor = self.selectedRowColor
         } ,
                        completion: { (didFinish) -> Void in
-                    self.text = "\(selectedText)"
+                        self.text = "\(selectedText)"
 
                         tableView.reloadData()
         })
@@ -424,7 +425,7 @@ extension DropDown: UITableViewDelegate {
             touchAction()
             self.endEditing(true)
         }
-        if let selected = optionArray.index(where: {$0 == selectedText}) {
+        if let selected = optionArray.firstIndex(where: {$0 == selectedText}) {
             if let id = optionIds?[selected] {
                 didSelectCompletion(selectedText, selected , id )
             }else{
@@ -528,7 +529,16 @@ extension UIView {
         layer.shouldRasterize = true
         layer.rasterizationScale = scale ? UIScreen.main.scale : 1
     }
-
+    
+    func viewBorder(borderColor : UIColor, borderWidth : CGFloat?) {
+        self.layer.borderColor = borderColor.cgColor
+        if let borderWidth_ = borderWidth {
+            self.layer.borderWidth = borderWidth_
+        } else {
+            self.layer.borderWidth = 1.0
+        }
+    }
+    
     var parentViewController: UIViewController? {
         var parentResponder: UIResponder? = self
         while parentResponder != nil {
